@@ -10,8 +10,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
                           BadSignature, SignatureExpired)
 
 Base = declarative_base()
-secret_key = ''.join(random.choice(string.ascii_uppercase +
-                                   string.digits) for x in xrange(20))
+secret_key = '\x19\xffDM\xbd\x12\x02\xf1\x90ZR\x16`\xfc\x13\xa7^7b\\\x8d5%\x12'
 
 
 class User(Base):
@@ -20,31 +19,17 @@ class User(Base):
     username = Column(String(40), unique=True)
     password_hash = Column(String(64))
 
-    # Hash password: DO NOT STORE PASSWORD IN PLAIN TEXT
+    # Hash Password: DO NOT STORE PASSWORD IN PLAIN TEXT
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
 
-    # Verify Password: Compare Passowrd with it's hash
+    # Verify Password: Compare Password with it's hash
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
     def generate_auth_token(self, expiration=300):
-        s = Serializer(secret_key, expires_id=expiration)
+        s = Serializer(secret_key, expires_in=expiration)
         return s.dumps({'id': self.id})
-
-    @staticmethod
-    def verify_auth_token(token):
-        s = Serializer(secret_key)
-        try:
-            data = s.loads(token)
-        except SignatureExpired:
-            # The token is valid but has expired
-            return None
-        except BadSignature:
-            # The token is invalid
-            return None
-        user_id = data['id']
-        return user_id
 
 
 class BucketList(Base):
