@@ -1,8 +1,10 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6a480c4abec04cfa94dac28245f23c61)](https://www.codacy.com/app/arnold-okoth/cp2_blapi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=andela-aokoth/cp2_blapi&amp;utm_campaign=Badge_Grade)
+
 # BucketList API
 
 ## Introduction
 
-> This application is a Flask API for a bucket list service that allows users to create, update and delete bucket lists. It also provides programmatic access to the items added to the items created. This API is a REST API and the return format for all endpoints is JSON. 
+> This application is a Flask API for a bucket list service that allows users to create, update and delete bucket lists. It also provides programmatic access to the items added to the items created. This API is a REST API and the return format for all endpoints is JSON.
 
 ## Endpoints
 
