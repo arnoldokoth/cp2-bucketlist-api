@@ -1,25 +1,30 @@
-from datetime import datetime
 import random
 import string
+from datetime import datetime
 
-from app.app import db
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
                           BadSignature, SignatureExpired)
 
+Base = declarative_base()
 secret_key = ''.join(random.choice(string.ascii_uppercase +
                                    string.digits) for x in xrange(20))
 
 
-class User(db.Model):
+class User(Base):
     __tablename__ = 'user'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(40), unique=True)
-    password_hash = db.Column(db.String(64))
+    id = Column(Integer, primary_key=True)
+    username = Column(String(40), unique=True)
+    password_hash = Column(String(64))
 
+    # Hash password: DO NOT STORE PASSWORD IN PLAIN TEXT
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
 
+    # Verify Password: Compare Passowrd with it's hash
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
@@ -33,29 +38,32 @@ class User(db.Model):
         try:
             data = s.loads(token)
         except SignatureExpired:
+            # The token is valid but has expired
             return None
         except BadSignature:
+            # The token is invalid
             return None
         user_id = data['id']
         return user_id
 
 
-class BucketList(db.Model):
+class BucketList(Base):
     __tablename__ = 'bucketlist'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    date_modified = db.Column(db.DateTime, default=datetime.utcnow)
-    created_by = db.Column(db.String(100), nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    date_created = Column(DateTime, default=datetime.utcnow)
+    date_modified = Column(DateTime, default=datetime.utcnow)
+    created_by = Column(Integer, ForeignKey('user.id'))
 
 
-class BucketListItems(db.Model):
+class BucketListItems(Base):
     __tablename__ = 'bucketlistitems'
-    id = db.Column(db.Integer, primary_key=True)
-    bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlist.id'))
-    name = db.Column(db.String(100), nullable=False)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    date_modified = db.Column(db.DateTime, default=datetime.utcnow)
-    done = db.Column(db.Boolean, default=False)
+    id = Column(Integer, primary_key=True)
+    bucketlist_id = Column(Integer, ForeignKey('bucketlist.id'))
+    name = Column(String(100), nullable=False)
+    date_created = Column(DateTime, default=datetime.utcnow)
+    date_modified = Column(DateTime, default=datetime.utcnow)
+    done = Column(Boolean, default=False)
 
-db.create_all()
+engine = create_engine('sqlite:///blapi.db')
+Base.metadata.create_all(engine)
