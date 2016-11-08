@@ -78,7 +78,7 @@ def register_new_user():
         session.commit()
     except Exception:
         session.rollback()
-        return jsonify({'message': 'Error occured while adding user!'})
+        return jsonify({'message': 'error occured while adding user'})
     return jsonify({'user': user.username})
     # Status Code: 200 -> Test This
 
@@ -94,13 +94,31 @@ def login_user():
             'token': token.decode('ascii')
             })
     else:
-        return jsonify({'message': 'Invalid Username/Password'})
+        return jsonify({'message': 'invalid username/password'})
 
 
 @app.route('/bucketlists', methods=['POST'])
 @auth.login_required
 def create_bucket_list():
-    return jsonify({'user_id': current_user['user_id']})
+    user_id = current_user['user_id']
+    name = request.json.get('name')
+
+    if name is None:
+        return jsonify({'message': 'bucketlist name not provided'})
+
+    if session.query(BucketList).filter_by(name=name,
+                                           created_by=user_id).first() is not None:
+        return jsonify({'message': 'bucketlist already exists'})
+
+    bucketlist = BucketList(name=name, created_by=user_id)
+    session.add(bucketlist)
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+        return jsonify({'message': 'error occured while creating bucketlist'})
+
+    return jsonify({'message': 'created bucketlist: {0}'.format(name)})
 
 
 @app.route('/bucketlists', methods=['GET'])
