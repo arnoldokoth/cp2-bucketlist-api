@@ -4,6 +4,10 @@ from test_setup import TestSetup
 
 class TestEndpoints(TestSetup):
 
+    @unittest.skip("work in progress")
+    def test_user_registration(self):
+        pass
+
     def test_user_login(self):
         credentials = {'username': 'arnoldokoth', 'password': 'somepassword'}
         response = self.app.post('/auth/login/', data=credentials)
@@ -38,6 +42,8 @@ class TestEndpoints(TestSetup):
         self.assertEqual(response.status_code, 200)
 
     def test_delete_bucket_list(self):
+        # Try get the bucket list first with a get request
+        # Assert that status_code 200 is returned
         response = self.app.delete('/bucketlists/1')
         self.assertEqual(response.status_code, 200)
 

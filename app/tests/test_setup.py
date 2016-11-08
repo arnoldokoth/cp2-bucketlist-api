@@ -1,6 +1,6 @@
 import unittest
 
-from app.models.models import User, BucketList, BucketListItems
+# from app.models.models import User, BucketList, BucketListItems
 from app.app import db, app
 
 
@@ -16,6 +16,3 @@ class TestSetup(unittest.TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
-
-if __name__ == '__main__':
-    unittest.main()
