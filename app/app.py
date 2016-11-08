@@ -78,7 +78,7 @@ def register_new_user():
         session.commit()
     except Exception:
         session.rollback()
-        return jsonify({'message': 'Error occured while adding user!'})
+        return jsonify({'message': 'error occured while adding user'})
     return jsonify({'user': user.username})
     # Status Code: 200 -> Test This
 
@@ -92,21 +92,52 @@ def login_user():
         return jsonify({
             'message': 'Hello, {0}'.format(g.current_user.username),
             'token': token.decode('ascii')
-            })
+        })
     else:
-        return jsonify({'message': 'Invalid Username/Password'})
+        return jsonify({'message': 'invalid username/password'})
 
 
 @app.route('/bucketlists', methods=['POST'])
 @auth.login_required
 def create_bucket_list():
-    return jsonify({'user_id': current_user['user_id']})
+    user_id = current_user['user_id']
+    name = request.json.get('name')
+
+    if name is None:
+        return jsonify({'message': 'bucketlist name not provided'})
+
+    if session.query(BucketList).filter_by(name=name,
+                                           created_by=user_id).first() is not None:
+        return jsonify({'message': 'bucketlist already exists'})
+
+    bucketlist = BucketList(name=name, created_by=user_id)
+    session.add(bucketlist)
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+        return jsonify({'message': 'error occured while creating bucketlist'})
+
+    return jsonify({'message': 'created bucketlist: {0}'.format(name)})
 
 
 @app.route('/bucketlists', methods=['GET'])
 @auth.login_required
 def get_bucket_lists():
-    return jsonify({'message': 'I got here!'})
+    user_id = current_user['user_id']
+    limit = request.args.get('limit', 20)
+    bucketlist_rows = session.query(BucketList).filter_by(
+        created_by=user_id).all()
+    bucketlists = []
+    for bucketlist in bucketlist_rows:
+        bucketlists.append({
+            'id': bucketlist.bucketlist_id,
+            'name': bucketlist.name,
+            'date_created': bucketlist.date_created,
+            'date_modified': bucketlist.date_modified,
+            'created_by': user_id
+        })
+    return jsonify(bucketlists)
 
 
 @app.route('/bucketlists/<int:id>', methods=['GET'])
