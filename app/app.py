@@ -5,7 +5,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
 from flask import Flask, jsonify, abort, request, g
 from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm import sessionmaker
-from models.models import Base, engine, User
+from models.models import Base, engine, User, BucketList
 
 
 auth = HTTPTokenAuth(scheme='Token')
@@ -16,6 +16,9 @@ app.config[
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+current_user = {
+    'user_id': None
+}
 
 
 @auth.verify_token
@@ -30,12 +33,18 @@ def verify_auth_token(token):
         # The token is invalid
         return None
     user_id = data['id']
+    current_user['user_id'] = user_id
     return user_id
 
 
 @app.errorhandler(404)
 def bucketlist_not_found(error):
     return jsonify({'message': 'Bucket List Not Found'})
+
+
+@app.errorhandler(401)
+def token_expired_or_invalid(error):
+    return jsonify({'message': 'Token Expired/Invalid'})
 
 
 def verify_password(username, password):
@@ -91,7 +100,7 @@ def login_user():
 @app.route('/bucketlists', methods=['POST'])
 @auth.login_required
 def create_bucket_list():
-    return jsonify({'message': 'Creating Bucket List'})
+    return jsonify({'user_id': current_user['user_id']})
 
 
 @app.route('/bucketlists', methods=['GET'])
