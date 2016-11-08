@@ -135,15 +135,31 @@ def get_bucket_lists():
             'name': bucketlist.name,
             'date_created': bucketlist.date_created,
             'date_modified': bucketlist.date_modified,
-            'created_by': user_id
+            'created_by': bucketlist.created_by
         })
     return jsonify(bucketlists)
 
 
-@app.route('/bucketlists/<int:id>', methods=['GET'])
+@app.route('/bucketlists/<int:bucketlist_id>', methods=['GET'])
 @auth.login_required
-def get_specific_bucket_list(id):
-    return jsonify({'id': id})
+def get_specific_bucket_list(bucketlist_id):
+    user_id = current_user['user_id']
+    if type(bucketlist_id) is not int:
+        return jsonify({'message': 'invalid bucketlist id'})
+
+    bucketlist_rows = session.query(BucketList).filter_by(
+        created_by=user_id, bucketlist_id=bucketlist_id).all()
+    bucketlists = []
+    for bucketlist in bucketlist_rows:
+        bucketlists.append({
+            'id': bucketlist.bucketlist_id,
+            'name': bucketlist.name,
+            'date_created': bucketlist.date_created,
+            'date_modified': bucketlist.date_modified,
+            'created_by': bucketlist.created_by
+        })
+
+    return jsonify(bucketlists)
 
 
 @app.route('/bucketlists/<int:id>', methods=['PUT'])
