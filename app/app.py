@@ -79,7 +79,10 @@ def register_new_user():
     except Exception:
         session.rollback()
         return jsonify({'message': 'error occured while adding user'})
-    return jsonify({'user': user.username})
+    return jsonify({
+        'user': user.username,
+        'message': 'login endpoint: 127.0.0.1:5000/auth/login'
+    })
     # Status Code: 200 -> Test This
 
 
@@ -162,10 +165,29 @@ def get_specific_bucket_list(bucketlist_id):
     return jsonify(bucketlists)
 
 
-@app.route('/bucketlists/<int:id>', methods=['PUT'])
+@app.route('/bucketlists/<int:bucketlist_id>', methods=['PUT'])
 @auth.login_required
-def update_bucket_list(id):
-    return jsonify({'id': id})
+def update_bucket_list(bucketlist_id):
+    user_id = current_user['user_id']
+    name = request.json.get('name')
+
+    if name is None:
+        return jsonify({'messsage': 'please provide a name'})
+
+    if session.query(BucketList).filter_by(
+            bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
+        return jsonify({'message': 'bucketlist does not exist'})
+
+    bucketlist = session.query(BucketList).filter_by(
+        bucketlist_id=bucketlist_id, created_by=user_id).first()
+    bucketlist.name = name
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+        return jsonify({'message': 'error updating bucketlist'})
+    return jsonify({
+        'message': 'bucketlist {0} update successfully'.format(bucketlist_id)})
 
 
 @app.route('/bucketlists/<int:id>', methods=['DELETE'])
