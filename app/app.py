@@ -5,7 +5,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
 from flask import Flask, jsonify, abort, request, g
 from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm import sessionmaker
-from models.models import Base, engine, User, BucketList
+from models.models import Base, engine, User, BucketList, BucketListItems
 
 
 auth = HTTPTokenAuth(scheme='Token')
@@ -197,7 +197,7 @@ def delete_bucket_list(bucketlist_id):
 
     if session.query(BucketList).filter_by(
             bucketlist_id=bucketlist_id, created_by=user_id) is None:
-        return jsonify({'message': 'bucketlist does not exist'})
+        return jsonify({'message': 'bucketlist not found'})
 
     session.query(BucketList).filter_by(
         bucketlist_id=bucketlist_id, created_by=user_id
@@ -211,10 +211,31 @@ def delete_bucket_list(bucketlist_id):
                     'successfully deleted bucketlist {0}'.format(bucketlist_id)})
 
 
-@app.route('/bucketlists/<int:id>/items', methods=['POST'])
+@app.route('/bucketlists/<int:bucketlist_id>/items', methods=['POST'])
 @auth.login_required
-def add_bucket_list_item(id):
-    return jsonify({'id': id})
+def add_bucket_list_item(bucketlist_id):
+    user_id = current_user['user_id']
+    name = request.json.get('name')
+    done = request.json.get('done', False)
+
+    if name is None:
+        return jsonify({'message': 'please provide the name field'})
+
+    if session.query(BucketList).filter_by(
+            bucketlist_id=bucketlist_id, created_by=user_id) is None:
+        return jsonify({'message': 'bucketlist not found'})
+
+    bucketlistitem = BucketListItems(bucketlist_id=bucketlist_id,
+                                     name=name, done=done)
+    session.add(bucketlistitem)
+
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+        return jsonify({'message': 'error adding bucketlist item'})
+    return jsonify({'message':
+                    'successfully added item {0}'.format(name)})
 
 
 @app.route('/bucketlists/<int:id>/items/<int:item_id>', methods=['PUT'])
