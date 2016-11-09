@@ -190,10 +190,25 @@ def update_bucket_list(bucketlist_id):
         'message': 'bucketlist {0} update successfully'.format(bucketlist_id)})
 
 
-@app.route('/bucketlists/<int:id>', methods=['DELETE'])
+@app.route('/bucketlists/<int:bucketlist_id>', methods=['DELETE'])
 @auth.login_required
-def delete_bucket_list(id):
-    return jsonify({'id': id})
+def delete_bucket_list(bucketlist_id):
+    user_id = current_user['user_id']
+
+    if session.query(BucketList).filter_by(
+            bucketlist_id=bucketlist_id, created_by=user_id) is None:
+        return jsonify({'message': 'bucketlist does not exist'})
+
+    session.query(BucketList).filter_by(
+        bucketlist_id=bucketlist_id, created_by=user_id
+    ).delete()
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+        return jsonify({'message': 'error deleting bucketlist'})
+    return jsonify({'message':
+                    'successfully deleted bucketlist {0}'.format(bucketlist_id)})
 
 
 @app.route('/bucketlists/<int:id>/items', methods=['POST'])
