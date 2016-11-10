@@ -147,6 +147,7 @@ def get_bucket_lists():
 @auth.login_required
 def get_specific_bucket_list(bucketlist_id):
     user_id = current_user['user_id']
+
     if type(bucketlist_id) is not int:
         return jsonify({'message': 'invalid bucketlist id'})
 
@@ -289,10 +290,27 @@ def update_bucket_list_item(bucketlist_id, item_id):
     return jsonify({'message': 'successfully updated bucket list item'})
 
 
-@app.route('/bucketlists/<int:id>/items/<int:item_id>', methods=['DELETE'])
+@app.route('/bucketlists/<int:bucketlist_id>/items/<int:item_id>', methods=['DELETE'])
 @auth.login_required
-def delete_bucket_list_item(id, item_id):
-    return jsonify({'id': id, 'item_id': item_id})
+def delete_bucket_list_item(bucketlist_id, item_id):
+    user_id = current_user['user_id']
+
+    if session.query(BucketList).filter_by(
+            bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
+        return jsonify({'message': 'bucketlist not found'})
+
+    if session.query(BucketListItems).filter_by(item_id=item_id) is None:
+        return jsonify({'message': 'bucketlist item does not exist'})
+
+    session.query(BucketListItems).filter_by(
+        item_id=item_id
+    ).delete()
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+        return jsonify({'message': 'error deleting bucketlist item'})
+    return jsonify({'message': 'successfully deleted bucketlist item'})
 
 
 if __name__ == '__main__':
