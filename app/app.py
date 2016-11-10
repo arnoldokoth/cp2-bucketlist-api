@@ -150,13 +150,29 @@ def get_specific_bucket_list(bucketlist_id):
     if type(bucketlist_id) is not int:
         return jsonify({'message': 'invalid bucketlist id'})
 
+    if session.query(BucketList).filter_by(
+            bucketlist_id=bucketlist_id, created_by=user_id).all() is None:
+        return jsonify({'message': 'bucket list not found'})
+
     bucketlist_rows = session.query(BucketList).filter_by(
         created_by=user_id, bucketlist_id=bucketlist_id).all()
     bucketlists = []
+    bucketlistitems = []
+    bucketlistitem_rows = session.query(BucketListItems).filter_by(
+        bucketlist_id=bucketlist_id).all()
+    for bucketlistitem in bucketlistitem_rows:
+        bucketlistitems.append({
+            'id': bucketlistitem.item_id,
+            'name': bucketlistitem.name,
+            'date_created': bucketlistitem.date_created,
+            'date_modified': bucketlistitem.date_modified,
+            'done': bucketlistitem.done
+        })
     for bucketlist in bucketlist_rows:
         bucketlists.append({
             'id': bucketlist.bucketlist_id,
             'name': bucketlist.name,
+            'items': bucketlistitems,
             'date_created': bucketlist.date_created,
             'date_modified': bucketlist.date_modified,
             'created_by': bucketlist.created_by
@@ -238,10 +254,39 @@ def add_bucket_list_item(bucketlist_id):
                     'successfully added item {0}'.format(name)})
 
 
-@app.route('/bucketlists/<int:id>/items/<int:item_id>', methods=['PUT'])
+@app.route('/bucketlists/<int:bucketlist_id>/items/<int:item_id>', methods=['PUT'])
 @auth.login_required
-def update_bucket_list_item(id, item_id):
-    return jsonify({'id': id, 'item_id': item_id})
+def update_bucket_list_item(bucketlist_id, item_id):
+    user_id = current_user['user_id']
+    done = request.json.get('done')
+
+    if done is None:
+        return jsonify({'message': 'please provide the done field'})
+
+    # Check if the current user owns this bucket list
+    if session.query(BucketList).filter_by(
+            bucketlist_id=bucketlist_id, created_by=user_id) is None:
+        return jsonify({'message': 'bucketlist not found'})
+
+    # Check if the bucket list item exists
+    if session.query(BucketListItems).filter_by(item_id=item_id) is None:
+        return jsonify({'message': 'bucket list item not found'})
+
+    # if session.query(BucketListItems).filter_by(name=name) is not None:
+    #     return jsonify({'message': 'bucket list item already exists'})
+
+    bucketlistitem = session.query(BucketListItems).filter_by(
+        item_id=item_id).first()
+    name = request.json.get('name', bucketlistitem.name)
+    bucketlistitem.name = name
+    bucketlistitem.done = done
+
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+        return jsonify({'message': 'error updating bucket list item'})
+    return jsonify({'message': 'successfully updated bucket list item'})
 
 
 @app.route('/bucketlists/<int:id>/items/<int:item_id>', methods=['DELETE'])
