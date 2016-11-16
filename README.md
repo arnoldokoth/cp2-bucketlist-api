@@ -1,5 +1,5 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6a480c4abec04cfa94dac28245f23c61)](https://www.codacy.com/app/arnold-okoth/cp2_blapi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=andela-aokoth/cp2_blapi&amp;utm_campaign=Badge_Grade) [![Coverage Status](https://coveralls.io/repos/github/andela-aokoth/cp2_blapi/badge.svg?branch=develop)](https://coveralls.io/github/andela-aokoth/cp2_blapi?branch=develop) [![Build Status](https://travis-ci.org/andela-aokoth/cp2_blapi.svg?branch=develop)](https://travis-ci.org/andela-aokoth/cp2_blapi)
-[![Dependency Status](https://www.versioneye.com/user/projects/582c9558ac030f00395f92be/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/582c9558ac030f00395f92be)
+[![Dependency Status](https://www.versioneye.com/user/projects/582c9558ac030f00395f92be/badge.svg?style=round-square)](https://www.versioneye.com/user/projects/582c9558ac030f00395f92be)
 # BucketList API
 
 ## Introduction
