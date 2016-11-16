@@ -7,8 +7,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
-
 from models import *
+
 
 auth = HTTPTokenAuth(scheme='Token')
 app.config[
