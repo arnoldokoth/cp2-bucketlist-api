@@ -8,7 +8,18 @@ class TestBucketListsPost(TestSetup):
 
     # Endpoint: /bucketlists -> POST
     def test_create_bucket_list_without_required_data(self):
-        bucketlist_data = {}
+        bucketlist_data = {'name': ''}
+        response = self.app.post('/bucketlists',
+                                 content_type='application/json',
+                                 headers=self.headers,
+                                 data=json.dumps(bucketlist_data))
+        self.assertEqual(str(json.loads(response.get_data())['message']),
+                         'bucketlist name not provided')
+
+    def test_create_bucketlist_with_empty_name(self):
+        bucketlist_data = {
+            'name': '  '
+        }
         response = self.app.post('/bucketlists',
                                  content_type='application/json',
                                  headers=self.headers,

@@ -38,8 +38,8 @@ def verify_auth_token(token):
 
 
 @app.errorhandler(404)
-def bucketlist_not_found(error):
-    return jsonify({'message': 'Bucket List Not Found'})
+def ivalid_url(error):
+    return jsonify({'message': 'You entered an invalid URL'})
 
 
 @app.errorhandler(401)
@@ -108,7 +108,7 @@ def create_bucket_list():
     user_id = current_user['user_id']
     name = request.json.get('name')
 
-    if name is None:
+    if not name.strip():
         return jsonify({'message': 'bucketlist name not provided'})
 
     if db.session.query(BucketList).filter_by(name=name,
@@ -130,14 +130,23 @@ def create_bucket_list():
 @auth.login_required
 def get_bucket_lists():
     user_id = current_user['user_id']
-    page = int(request.args.get('page', 1))
-    limit = int(request.args.get('limit', 2))
+    try:
+        page = int(request.args.get('page', 1))
+    except Exception:
+        return jsonify({'message': 'Invalid Page Value'})
+    try:
+        limit = int(request.args.get('limit', 20))
+    except Exception:
+        return jsonify({'message': 'Invalid Limit Value'})
+    search = request.args.get('q', '')
 
     if db.session.query(BucketList).filter_by(created_by=user_id).count() == 0:
         return jsonify({'message': 'no bucketlist found'})
 
-    bucketlist_rows = BucketList.query.filter_by(
-        created_by=user_id).paginate(page, limit, False)
+    bucketlist_rows = BucketList.query.filter(
+        BucketList.created_by == user_id,
+        BucketList.name.like('%' + search + '%')).paginate(page, limit, False)
+
     all_pages = bucketlist_rows.pages
     next_page = bucketlist_rows.has_next
     previous_page = bucketlist_rows.has_prev
@@ -149,22 +158,35 @@ def get_bucket_lists():
         next_page_url = None
 
     if previous_page:
-        previous_page_url = str(request.url_root) + '/bucketlists?' + \
+        previous_page_url = str(request.url_root) + 'bucketlists?' + \
             'limit=' + str(limit) + '&page=' + str(page - 1)
     else:
         previous_page_url = None
     bucketlists = []
     for bucketlist in bucketlist_rows.items:
+        bucketlistitems = []
+        bucketlistitem_rows = BucketListItems.query.filter(
+            BucketListItems.bucketlist_id == bucketlist.bucketlist_id).all()
+        for bucketlistitem in bucketlistitem_rows:
+            bucketlistitems.append({
+                'id': bucketlistitem.item_id,
+                'name': bucketlistitem.name,
+                'date_created': bucketlistitem.date_created,
+                'date_modified': bucketlistitem.date_modified,
+                'done': bucketlistitem.done
+            })
         bucketlists.append({
             'id': bucketlist.bucketlist_id,
             'name': bucketlist.name,
             'date_created': bucketlist.date_created,
             'date_modified': bucketlist.date_modified,
             'created_by': bucketlist.created_by,
+            'items': bucketlistitems,
             'total_pages': all_pages,
             'next_page': next_page_url,
             'previous_page': previous_page_url
         })
+
     return jsonify(bucketlists)
 
 
@@ -173,11 +195,8 @@ def get_bucket_lists():
 def get_specific_bucket_list(bucketlist_id):
     user_id = current_user['user_id']
 
-    if type(bucketlist_id) is not int:
-        return jsonify({'message': 'invalid bucketlist id'})
-
     if db.session.query(BucketList).filter_by(
-            bucketlist_id=bucketlist_id, created_by=user_id).all() is None:
+            bucketlist_id=bucketlist_id, created_by=user_id).count() == 0:
         return jsonify({'message': 'bucket list not found'})
 
     bucketlist_rows = db.session.query(BucketList).filter_by(
@@ -213,8 +232,8 @@ def update_bucket_list(bucketlist_id):
     user_id = current_user['user_id']
     name = request.json.get('name')
 
-    if name is None:
-        return jsonify({'messsage': 'please provide a name'})
+    if not name.strip():
+        return jsonify({'message': 'please provide a name'})
 
     if db.session.query(BucketList).filter_by(
             bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
@@ -229,7 +248,7 @@ def update_bucket_list(bucketlist_id):
         db.session.rollback()
         return jsonify({'message': 'error updating bucketlist'})
     return jsonify({
-        'message': 'bucketlist {0} update successfully'.format(bucketlist_id)})
+        'message': 'bucketlist {0} updated successfully'.format(bucketlist_id)})
 
 
 @app.route('/bucketlists/<int:bucketlist_id>', methods=['DELETE'])
