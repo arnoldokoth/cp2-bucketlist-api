@@ -130,21 +130,40 @@ def create_bucket_list():
 @auth.login_required
 def get_bucket_lists():
     user_id = current_user['user_id']
-    limit = request.args.get('limit', 20)
+    page = int(request.args.get('page', 1))
+    limit = int(request.args.get('limit', 2))
 
     if db.session.query(BucketList).filter_by(created_by=user_id).count() == 0:
         return jsonify({'message': 'no bucketlist found'})
 
-    bucketlist_rows = db.session.query(BucketList).filter_by(
-        created_by=user_id).all()
+    bucketlist_rows = BucketList.query.filter_by(
+        created_by=user_id).paginate(page, limit, False)
+    all_pages = bucketlist_rows.pages
+    next_page = bucketlist_rows.has_next
+    previous_page = bucketlist_rows.has_prev
+
+    if next_page:
+        next_page_url = str(request.url_root) + 'bucketlists?' + \
+            'limit=' + str(limit) + '&page=' + str(page + 1)
+    else:
+        next_page_url = None
+
+    if previous_page:
+        previous_page_url = str(request.url_root) + '/bucketlists?' + \
+            'limit=' + str(limit) + '&page=' + str(page - 1)
+    else:
+        previous_page_url = None
     bucketlists = []
-    for bucketlist in bucketlist_rows:
+    for bucketlist in bucketlist_rows.items:
         bucketlists.append({
             'id': bucketlist.bucketlist_id,
             'name': bucketlist.name,
             'date_created': bucketlist.date_created,
             'date_modified': bucketlist.date_modified,
-            'created_by': bucketlist.created_by
+            'created_by': bucketlist.created_by,
+            'total_pages': all_pages,
+            'next_page': next_page_url,
+            'previous_page': previous_page_url
         })
     return jsonify(bucketlists)
 
