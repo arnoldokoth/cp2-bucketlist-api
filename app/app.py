@@ -48,11 +48,11 @@ def token_expired_or_invalid(error):
 
 
 def verify_password(username, password):
-    user = db.session.query(User).filter_by(username=username).first()
+    user = db.session.query(User).filter_by(username=username).one()
     if not user or not user.verify_password(password):
         return False
-    g.current_user = user
-    return True
+    # g.current_user = user
+    return user
 
 
 @app.route('/auth/register', methods=['POST'])
@@ -92,10 +92,11 @@ def login_user():
     if username is None or password is None:
         return jsonify({'message': 'Username/Password Not Provided!'})
 
-    if verify_password(username, password):
-        token = g.current_user.generate_auth_token()
+    user = verify_password(username, password)
+    if user:
+        token = user.generate_auth_token()
         return jsonify({
-            'message': 'Hello, {0}'.format(g.current_user.username),
+            'message': 'Hello, {0}'.format(user.username),
             'token': token.decode('ascii')
         })
     else:
@@ -257,7 +258,7 @@ def delete_bucket_list(bucketlist_id):
     user_id = current_user['user_id']
 
     if db.session.query(BucketList).filter_by(
-            bucketlist_id=bucketlist_id, created_by=user_id) is None:
+            bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
         return jsonify({'message': 'bucketlist not found'})
 
     db.session.query(BucketList).filter_by(
@@ -279,12 +280,16 @@ def add_bucket_list_item(bucketlist_id):
     name = request.json.get('name')
     done = request.json.get('done', False)
 
-    if name is None:
+    if not name:
         return jsonify({'message': 'please provide the name field'})
 
     if db.session.query(BucketList).filter_by(
             bucketlist_id=bucketlist_id, created_by=user_id) is None:
         return jsonify({'message': 'bucketlist not found'})
+
+    if db.session.query(BucketListItems).filter_by(bucketlist_id=bucketlist_id,
+                                                   name=name).first() is not None:
+        return jsonify({'message': 'bucketlist item already exists'})
 
     bucketlistitem = BucketListItems(bucketlist_id=bucketlist_id,
                                      name=name, done=done)
