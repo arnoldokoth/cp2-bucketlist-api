@@ -6,6 +6,7 @@ from test_setup import TestSetup
 
 class TestBucketListPut(TestSetup):
 
+    # Endpoint: /bucketlists/<int:bucketlist_id> -> POST
     def test_update_bucket_list_without_name(self):
         bucketlist_data = {
             'name': 'Test Bucket List'
