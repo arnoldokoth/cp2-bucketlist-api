@@ -348,7 +348,7 @@ def delete_bucket_list_item(bucketlist_id, item_id):
             bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
         return jsonify({'message': 'bucketlist not found'})
 
-    if db.session.query(BucketListItems).filter_by(item_id=item_id) is None:
+    if db.session.query(BucketListItems).filter_by(item_id=item_id).count() == 0:
         return jsonify({'message': 'bucketlist item does not exist'})
 
     db.session.query(BucketListItems).filter_by(
