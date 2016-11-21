@@ -297,8 +297,7 @@ def add_bucket_list_item(bucketlist_id):
 
     try:
         db.session.commit()
-    except Exception as exc:
-        print(exc)
+    except Exception:
         db.session.rollback()
         return jsonify({'message': 'error adding bucketlist item'})
     return jsonify({'message':
