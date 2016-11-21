@@ -1,4 +1,3 @@
-import json
 import unittest
 from app.app import app, db
 

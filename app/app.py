@@ -1,7 +1,7 @@
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
                           BadSignature, SignatureExpired)
 
-from flask import Flask, jsonify, request, g
+from flask import Flask, jsonify, request
 from flask_httpauth import HTTPTokenAuth
 from flask_sqlalchemy import SQLAlchemy
 
@@ -51,7 +51,6 @@ def verify_password(username, password):
     user = db.session.query(User).filter_by(username=username).one()
     if not user or not user.verify_password(password):
         return False
-    # g.current_user = user
     return user
 
 
