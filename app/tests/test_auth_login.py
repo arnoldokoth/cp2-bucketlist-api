@@ -31,6 +31,22 @@ class TestAuthLogin(TestSetup):
         self.assertEqual(str(json.loads(response.get_data())['message']),
                          'Username/Password Not Provided!')
 
+    def test_login_with_invalid_username(self):
+        credentials = {'username': 'testuser1', 'password': 'testpassword'}
+        response = self.app.post('/auth/login',
+                                 data=json.dumps(credentials),
+                                 content_type='application/json')
+        self.assertEqual(str(json.loads(response.get_data())['message']),
+                         'invalid username/password')
+
+    def test_login_with_invalid_password(self):
+        credentials = {'username': 'testuser', 'password': 'testpassworddd'}
+        response = self.app.post('/auth/login',
+                                 data=json.dumps(credentials),
+                                 content_type='application/json')
+        self.assertEqual(str(json.loads(response.get_data())['message']),
+                         'invalid username/password')
+
     def test_successful_user_login(self):
         credentials = {'username': 'testuser', 'password': 'testpassword'}
         response = self.app.post('/auth/login',

@@ -48,7 +48,7 @@ def token_expired_or_invalid(error):
 
 
 def verify_password(username, password):
-    user = db.session.query(User).filter_by(username=username).one()
+    user = db.session.query(User).filter_by(username=username).first()
     if not user or not user.verify_password(password):
         return False
     return user
