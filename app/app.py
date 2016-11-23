@@ -1,6 +1,7 @@
+import os
+
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
                           BadSignature, SignatureExpired)
-
 from flask import Flask, jsonify, request
 from flask.ext.api import status
 from flask_httpauth import HTTPTokenAuth
@@ -12,8 +13,7 @@ from models import *
 
 
 auth = HTTPTokenAuth(scheme='Token')
-app.config[
-    'SECRET_KEY'] = '\x19\xffDM\xbd\x12\x02\xf1\x90ZR\x16`\xfc\x13\xa7^7b\\\x8d5%\x12'
+app.config['SECRET_KEY'] = os.environ['FLASK_SECRET_KEY']
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blapi.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 

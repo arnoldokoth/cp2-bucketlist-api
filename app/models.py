@@ -1,9 +1,11 @@
+import os
+
 from datetime import datetime
 from app import db
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
-secret_key = '\x19\xffDM\xbd\x12\x02\xf1\x90ZR\x16`\xfc\x13\xa7^7b\\\x8d5%\x12'
+secret_key = os.environ['FLASK_SECRET_KEY']
 
 __all__ = ['User', 'BucketList', 'BucketListItems']
 
