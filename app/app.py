@@ -2,6 +2,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
                           BadSignature, SignatureExpired)
 
 from flask import Flask, jsonify, request
+from flask.ext.api import status
 from flask_httpauth import HTTPTokenAuth
 from flask_sqlalchemy import SQLAlchemy
 
@@ -80,7 +81,7 @@ def register_new_user():
     return jsonify({
         'user': user.username,
         'message': 'login endpoint: localhost:5000/auth/login'
-    })
+    }), status.HTTP_201_CREATED
 
 
 @app.route('/auth/login', methods=['POST'])
@@ -121,7 +122,8 @@ def create_bucket_list():
         db.session.commit()
     except Exception:
         db.session.rollback()
-        return jsonify({'message': 'error occured while creating bucketlist'})
+        return jsonify({
+            'message': 'error occured while creating bucketlist'}), status.HTTP_500_INTERNAL_SERVER_ERROR
 
     return jsonify({'message': 'created bucketlist: {0}'.format(name)})
 
@@ -246,7 +248,7 @@ def update_bucket_list(bucketlist_id):
         db.session.commit()
     except Exception:
         db.session.rollback()
-        return jsonify({'message': 'error updating bucketlist'})
+        return jsonify({'message': 'error updating bucketlist'}), status.HTTP_500_INTERNAL_SERVER_ERROR
     return jsonify({
         'message': 'bucketlist {0} updated successfully'.format(bucketlist_id)})
 
@@ -267,7 +269,7 @@ def delete_bucket_list(bucketlist_id):
         db.session.commit()
     except Exception:
         db.session.rollback()
-        return jsonify({'message': 'error deleting bucketlist'})
+        return jsonify({'message': 'error deleting bucketlist'}), status.HTTP_500_INTERNAL_SERVER_ERROR
     return jsonify({'message':
                     'successfully deleted bucketlist {0}'.format(bucketlist_id)})
 
@@ -298,7 +300,7 @@ def add_bucket_list_item(bucketlist_id):
         db.session.commit()
     except Exception:
         db.session.rollback()
-        return jsonify({'message': 'error adding bucketlist item'})
+        return jsonify({'message': 'error adding bucketlist item'}), status.HTTP_500_INTERNAL_SERVER_ERROR
     return jsonify({'message':
                     'successfully added item {0}'.format(name)})
 
@@ -315,11 +317,11 @@ def update_bucket_list_item(bucketlist_id, item_id):
     # Check if the current user owns this bucket list
     if db.session.query(BucketList).filter_by(
             bucketlist_id=bucketlist_id, created_by=user_id) is None:
-        return jsonify({'message': 'bucketlist not found'})
+        return jsonify({'message': 'bucketlist not found'}), status.HTTP_304_NOT_MODIFIED
 
     # Check if the bucket list item exists
     if db.session.query(BucketListItems).filter_by(item_id=item_id) is None:
-        return jsonify({'message': 'bucket list item not found'})
+        return jsonify({'message': 'bucket list item not found'}), status.HTTP_304_NOT_MODIFIED
 
     # if db.session.query(BucketListItems).filter_by(name=name) is not None:
     #     return jsonify({'message': 'bucket list item already exists'})
@@ -334,7 +336,7 @@ def update_bucket_list_item(bucketlist_id, item_id):
         db.session.commit()
     except Exception:
         db.session.rollback()
-        return jsonify({'message': 'error updating bucket list item'})
+        return jsonify({'message': 'error updating bucket list item'}), status.HTTP_500_INTERNAL_SERVER_ERROR
     return jsonify({'message': 'successfully updated bucket list item'})
 
 
@@ -357,7 +359,7 @@ def delete_bucket_list_item(bucketlist_id, item_id):
         db.session.commit()
     except Exception:
         db.session.rollback()
-        return jsonify({'message': 'error deleting bucketlist item'})
+        return jsonify({'message': 'error deleting bucketlist item'}), status.HTTP_500_INTERNAL_SERVER_ERROR
     return jsonify({'message': 'successfully deleted bucketlist item'})
 
 
