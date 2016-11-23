@@ -21,7 +21,7 @@ class TestSetup(unittest.TestCase):
                                  content_type='application/json')
         token = json.loads(response.get_data().decode())['token']
         self.headers = {
-            'Authorization': 'Token ' + token
+            'Authorization': token
         }
 
     def tearDown(self):

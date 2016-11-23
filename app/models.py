@@ -52,8 +52,8 @@ class BucketListItems(db.Model):
                               db.ForeignKey('bucketlist.bucketlist_id',
                                             ondelete='CASCADE'))
     name = db.Column(db.String(100), nullable=False)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    date_modified = db.Column(db.DateTime, default=datetime.utcnow)
+    date_created = db.Column(db.DateTime, default=datetime.now())
+    date_modified = db.Column(db.DateTime, default=datetime.now())
     done = db.Column(db.Boolean, default=False)
 
 db.create_all()

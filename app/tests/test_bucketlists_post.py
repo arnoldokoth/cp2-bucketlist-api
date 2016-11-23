@@ -52,6 +52,7 @@ class TestBucketListsPost(TestSetup):
                                  data=json.dumps(bucketlist_data),
                                  content_type='application/json',
                                  headers=self.headers)
+        print(response)
         self.assertEqual(str(json.loads(response.get_data())['message']),
                          'created bucketlist: {0}'.format(bucketlist_data['name']))
 

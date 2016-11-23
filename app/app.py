@@ -57,11 +57,11 @@ def verify_password(username, password):
 
 @app.route('/auth/register', methods=['POST'])
 def register_new_user():
-    username = request.json.get('username')
-    password = request.json.get('password')
+    username = request.json.get('username', '')
+    password = request.json.get('password', '')
 
     # Check if username | password are provided
-    if username is None or password is None:
+    if not username.strip() or not password.strip():
         return jsonify({'message': 'Username/Password Not Provided!'})
 
     # Check if the username already exists
@@ -86,10 +86,10 @@ def register_new_user():
 
 @app.route('/auth/login', methods=['POST'])
 def login_user():
-    username = request.json.get('username')
-    password = request.json.get('password')
+    username = request.json.get('username', '')
+    password = request.json.get('password', '')
     # Check if username | password are provided
-    if username is None or password is None:
+    if not username.strip() or not password.strip():
         return jsonify({'message': 'Username/Password Not Provided!'})
 
     user = verify_password(username, password)
@@ -97,7 +97,7 @@ def login_user():
         token = user.generate_auth_token()
         return jsonify({
             'message': 'Hello, {0}'.format(user.username),
-            'token': token.decode('ascii')
+            'token': 'Token ' + token.decode('ascii')
         })
     else:
         return jsonify({'message': 'invalid username/password'})
@@ -107,7 +107,7 @@ def login_user():
 @auth.login_required
 def create_bucket_list():
     user_id = current_user['user_id']
-    name = request.json.get('name')
+    name = request.json.get('name', '')
 
     if not name.strip():
         return jsonify({'message': 'bucketlist name not provided'})
@@ -125,7 +125,7 @@ def create_bucket_list():
         return jsonify({
             'message': 'error occured while creating bucketlist'}), status.HTTP_500_INTERNAL_SERVER_ERROR
 
-    return jsonify({'message': 'created bucketlist: {0}'.format(name)})
+    return jsonify({'message': 'created bucketlist: {0}'.format(name)}), status.HTTP_201_CREATED
 
 
 @app.route('/bucketlists', methods=['GET'])
@@ -232,7 +232,7 @@ def get_specific_bucket_list(bucketlist_id):
 @auth.login_required
 def update_bucket_list(bucketlist_id):
     user_id = current_user['user_id']
-    name = request.json.get('name')
+    name = request.json.get('name', '')
 
     if not name.strip():
         return jsonify({'message': 'please provide a name'})
@@ -278,10 +278,10 @@ def delete_bucket_list(bucketlist_id):
 @auth.login_required
 def add_bucket_list_item(bucketlist_id):
     user_id = current_user['user_id']
-    name = request.json.get('name')
+    name = request.json.get('name', '')
     done = request.json.get('done', False)
 
-    if not name:
+    if not name.strip():
         return jsonify({'message': 'please provide the name field'})
 
     if db.session.query(BucketList).filter_by(
@@ -325,7 +325,11 @@ def update_bucket_list_item(bucketlist_id, item_id):
 
     bucketlistitem = db.session.query(BucketListItems).filter_by(
         item_id=item_id).first()
+    if bucketlistitem is None:
+        return jsonify({'message': 'bucket list item not found'})
     name = request.json.get('name', bucketlistitem.name)
+    if not name.strip():
+        return jsonify({'message': 'please enter a valid name'})
     bucketlistitem.name = name
     bucketlistitem.done = done
 
