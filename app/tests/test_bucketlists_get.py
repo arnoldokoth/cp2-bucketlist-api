@@ -43,5 +43,22 @@ class TestBucketListsGet(TestSetup):
         self.assertEqual(str(json.loads(response.get_data())['message']),
                          'bucket list not found')
 
+    def test_successful_get_bucketlist(self):
+        bucketlist_data = {
+            'name': 'Learning Paths'
+        }
+        response = self.app.post('/bucketlists',
+                                 data=json.dumps(bucketlist_data),
+                                 content_type='application/json',
+                                 headers=self.headers)
+        self.assertEqual(str(json.loads(response.get_data())['message']),
+                         'created bucketlist: {0}'.format(bucketlist_data['name']))
+        response = self.app.get('/bucketlists/1',
+                                content_type='application/json',
+                                headers=self.headers)
+        self.assertEqual(str(json.loads(response.get_data())[0]['name']),
+                         bucketlist_data['name'])
+        self.assertEqual(str(json.loads(response.get_data())[0]['id']), '1')
+
 if __name__ == '__main__':
     unittest.main()
