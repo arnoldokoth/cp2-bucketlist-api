@@ -3,7 +3,7 @@ import os
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
                           BadSignature, SignatureExpired)
 from flask import Flask, jsonify, request
-from flask.ext.api import status
+from flask_api import status
 from flask_httpauth import HTTPTokenAuth
 from flask_sqlalchemy import SQLAlchemy
 
@@ -322,9 +322,6 @@ def update_bucket_list_item(bucketlist_id, item_id):
     # Check if the bucket list item exists
     if db.session.query(BucketListItems).filter_by(item_id=item_id) is None:
         return jsonify({'message': 'bucket list item not found'}), status.HTTP_304_NOT_MODIFIED
-
-    # if db.session.query(BucketListItems).filter_by(name=name) is not None:
-    #     return jsonify({'message': 'bucket list item already exists'})
 
     bucketlistitem = db.session.query(BucketListItems).filter_by(
         item_id=item_id).first()
