@@ -34,8 +34,8 @@ class BucketList(db.Model):
     __tablename__ = 'bucketlist'
     bucketlist_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    date_modified = db.Column(db.DateTime, default=datetime.utcnow)
+    date_created = db.Column(db.DateTime, default=datetime.now())
+    date_modified = db.Column(db.DateTime, default=datetime.now())
     created_by = db.Column(db.Integer, db.ForeignKey('user.user_id',
                                                      ondelete='CASCADE'))
     bucketlistitems = db.relationship('BucketListItems',
