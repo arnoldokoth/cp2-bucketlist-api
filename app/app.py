@@ -6,8 +6,10 @@ from flask import Flask, jsonify, request, make_response, current_app
 from flask_api import status
 from flask_httpauth import HTTPTokenAuth
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+CORS(app)
 db = SQLAlchemy(app)
 from models import *
 
