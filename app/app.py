@@ -81,7 +81,6 @@ def verify_auth_token(token):
 
 
 @app.errorhandler(404)
-@crossdomain(origin='*')
 def ivalid_url(error):
     return jsonify({'message': 'You entered an invalid URL'})
 
