@@ -1,11 +1,13 @@
 import os
 
 from datetime import datetime
-from app import db
+from app import app
+from flask_sqlalchemy import SQLAlchemy
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 secret_key = os.environ['FLASK_SECRET_KEY']
+db = SQLAlchemy(app)
 
 __all__ = ['User', 'BucketList', 'BucketListItems']
 
@@ -56,4 +58,4 @@ class BucketListItems(db.Model):
     date_modified = db.Column(db.DateTime, default=datetime.now())
     done = db.Column(db.Boolean, default=False)
 
-db.create_all()
+# db.create_all()
