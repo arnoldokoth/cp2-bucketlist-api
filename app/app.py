@@ -16,7 +16,7 @@ from models import *
 
 auth = HTTPTokenAuth(scheme='Token')
 app.config['SECRET_KEY'] = os.environ['FLASK_SECRET_KEY']
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blapi.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 current_user = {
