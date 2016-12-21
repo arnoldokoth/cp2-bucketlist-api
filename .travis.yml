@@ -5,6 +5,9 @@ python:
 install:
   - pip install -r requirements.txt
   - pip install coveralls
+  - python manage.py db init
+  - pyhton manage.py db migrate
+  - python manage.py db upgrade
 # command to run tests
 script:
  nosetests -v --with-coverage
