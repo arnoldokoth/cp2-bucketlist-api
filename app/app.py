@@ -3,7 +3,7 @@ import os
 from datetime import timedelta
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
                           BadSignature, SignatureExpired)
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response, current_app
 from flask_api import status
 from flask_httpauth import HTTPTokenAuth
 from flask_sqlalchemy import SQLAlchemy
