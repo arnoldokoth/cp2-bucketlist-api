@@ -1,13 +1,11 @@
 import os
 
-from datetime import timedelta
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
                           BadSignature, SignatureExpired)
 from flask import Flask, jsonify, request, make_response, current_app
 from flask_api import status
 from flask_httpauth import HTTPTokenAuth
 from flask_sqlalchemy import SQLAlchemy
-from functools import update_wrapper
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
@@ -22,47 +20,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 current_user = {
     'user_id': None
 }
-
-def crossdomain(origin=None, methods=None, headers=None,
-                max_age=21600, attach_to_all=True,
-                automatic_options=True):
-    if methods is not None:
-        methods = ', '.join(sorted(x.upper() for x in methods))
-    if headers is not None and not isinstance(headers, basestring):
-        headers = ', '.join(x.upper() for x in headers)
-    if not isinstance(origin, basestring):
-        origin = ', '.join(origin)
-    if isinstance(max_age, timedelta):
-        max_age = max_age.total_seconds()
-
-    def get_methods():
-        if methods is not None:
-            return methods
-
-        options_resp = current_app.make_default_options_response()
-        return options_resp.headers['allow']
-
-    def decorator(f):
-        def wrapped_function(*args, **kwargs):
-            if automatic_options and request.method == 'OPTIONS':
-                resp = current_app.make_default_options_response()
-            else:
-                resp = make_response(f(*args, **kwargs))
-            if not attach_to_all and request.method != 'OPTIONS':
-                return resp
-
-            h = resp.headers
-
-            h['Access-Control-Allow-Origin'] = origin
-            h['Access-Control-Allow-Methods'] = get_methods()
-            h['Access-Control-Max-Age'] = str(max_age)
-            if headers is not None:
-                h['Access-Control-Allow-Headers'] = headers
-            return resp
-
-        f.provide_automatic_options = False
-        return update_wrapper(wrapped_function, f)
-    return decorator
 
 @auth.verify_token
 def verify_auth_token(token):
@@ -86,7 +43,6 @@ def ivalid_url(error):
 
 
 @app.errorhandler(401)
-@crossdomain(origin='*')
 def token_expired_or_invalid(error):
     return jsonify({'message': 'Token Expired/Invalid'})
 
@@ -99,7 +55,6 @@ def verify_password(username, password):
 
 
 @app.route('/auth/register', methods=['POST'])
-@crossdomain(origin='*')
 def register_new_user():
     username = request.json.get('username', '')
     password = request.json.get('password', '')
@@ -129,7 +84,6 @@ def register_new_user():
 
 
 @app.route('/auth/login', methods=['POST'])
-@crossdomain(origin='*')
 def login_user():
     username = request.json.get('username', '')
     password = request.json.get('password', '')
@@ -151,7 +105,6 @@ def login_user():
 
 @app.route('/bucketlists', methods=['POST'])
 @auth.login_required
-@crossdomain(origin='*')
 def create_bucket_list():
     user_id = current_user['user_id']
     name = request.json.get('name', '')
@@ -177,7 +130,6 @@ def create_bucket_list():
 
 @app.route('/bucketlists', methods=['GET'])
 @auth.login_required
-@crossdomain(origin='*')
 def get_bucket_lists():
     user_id = current_user['user_id']
     try:
@@ -242,7 +194,6 @@ def get_bucket_lists():
 
 @app.route('/bucketlists/<int:bucketlist_id>', methods=['GET'])
 @auth.login_required
-@crossdomain(origin='*')
 def get_specific_bucket_list(bucketlist_id):
     user_id = current_user['user_id']
 
@@ -279,7 +230,6 @@ def get_specific_bucket_list(bucketlist_id):
 
 @app.route('/bucketlists/<int:bucketlist_id>', methods=['PUT'])
 @auth.login_required
-@crossdomain(origin='*')
 def update_bucket_list(bucketlist_id):
     user_id = current_user['user_id']
     name = request.json.get('name', '')
@@ -305,7 +255,6 @@ def update_bucket_list(bucketlist_id):
 
 @app.route('/bucketlists/<int:bucketlist_id>', methods=['DELETE'])
 @auth.login_required
-@crossdomain(origin='*')
 def delete_bucket_list(bucketlist_id):
     user_id = current_user['user_id']
 
@@ -327,7 +276,6 @@ def delete_bucket_list(bucketlist_id):
 
 @app.route('/bucketlists/<int:bucketlist_id>/items', methods=['POST'])
 @auth.login_required
-@crossdomain(origin='*')
 def add_bucket_list_item(bucketlist_id):
     user_id = current_user['user_id']
     name = request.json.get('name', '')
@@ -359,7 +307,6 @@ def add_bucket_list_item(bucketlist_id):
 
 @app.route('/bucketlists/<int:bucketlist_id>/items/<int:item_id>', methods=['PUT'])
 @auth.login_required
-@crossdomain(origin='*')
 def update_bucket_list_item(bucketlist_id, item_id):
     user_id = current_user['user_id']
     done = request.json.get('done')
@@ -396,7 +343,6 @@ def update_bucket_list_item(bucketlist_id, item_id):
 
 @app.route('/bucketlists/<int:bucketlist_id>/items/<int:item_id>', methods=['DELETE'])
 @auth.login_required
-@crossdomain(origin='*')
 def delete_bucket_list_item(bucketlist_id, item_id):
     user_id = current_user['user_id']
 
