@@ -1,5 +1,6 @@
 import os
 
+from datetime import timedelta
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
                           BadSignature, SignatureExpired)
 from flask import Flask, jsonify, request
