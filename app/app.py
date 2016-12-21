@@ -76,9 +76,9 @@ def register_new_user():
 
     try:
         db.session.commit()
-    except Exception:
+    except Exception as e:
         db.session.rollback()
-        return jsonify({'message': 'error occured while adding user'})
+        return jsonify({'message': 'error occured while adding user', 'error': e})
     return jsonify({
         'user': user.username,
         'message': 'login endpoint: localhost:5000/auth/login'
