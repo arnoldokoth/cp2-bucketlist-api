@@ -1,1 +1,2 @@
-web: cd app; python models.py; gunicorn app:app
+web: cd app; gunicorn app:app
+migrate: from app.models import db;db.create_all()
