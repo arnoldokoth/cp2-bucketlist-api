@@ -97,6 +97,7 @@ def login_user():
         token = user.generate_auth_token()
         return jsonify({
             'message': 'Hello, {0}'.format(user.username),
+            'username': user.username,
             'token': 'Token ' + token.decode('ascii')
         })
     else:
