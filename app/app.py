@@ -103,7 +103,7 @@ def login_user():
             'token': 'Token ' + token.decode('ascii')
         })
     else:
-        return jsonify({'message': 'invalid username/password'})
+        return jsonify({'message': 'invalid username/password'}), status.HTTP_401_UNAUTHORIZED
 
 
 @app.route('/bucketlists', methods=['POST'])
@@ -118,7 +118,7 @@ def create_bucket_list():
 
     if db.session.query(BucketList).filter_by(name=name,
                                               created_by=user_id).first() is not None:
-        return jsonify({'message': 'bucketlist already exists'})
+        return jsonify({'message': 'bucketlist already exists'}), status.HTTP_400_BAD_REQUEST
 
     bucketlist = BucketList(name=name, description=description, created_by=user_id)
     db.session.add(bucketlist)
