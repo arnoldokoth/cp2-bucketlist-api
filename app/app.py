@@ -111,19 +111,21 @@ def login_user():
 def create_bucket_list():
     user_id = current_user['user_id']
     name = request.json.get('name', '')
+    description = request.json.get('description', '')
 
-    if not name.strip():
+    if not name.strip() and not description.strip():
         return jsonify({'message': 'bucketlist name not provided'})
 
     if db.session.query(BucketList).filter_by(name=name,
                                               created_by=user_id).first() is not None:
         return jsonify({'message': 'bucketlist already exists'})
 
-    bucketlist = BucketList(name=name, created_by=user_id)
+    bucketlist = BucketList(name=name, description=description, created_by=user_id)
     db.session.add(bucketlist)
     try:
         db.session.commit()
-    except Exception:
+    except Exception as e:
+        print(e)
         db.session.rollback()
         return jsonify({
             'message': 'error occured while creating bucketlist'}), status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -183,13 +185,14 @@ def get_bucket_lists():
         bucketlists.append({
             'id': bucketlist.bucketlist_id,
             'name': bucketlist.name,
+            'description': bucketlist.description,
             'date_created': bucketlist.date_created,
             'date_modified': bucketlist.date_modified,
-            'created_by': bucketlist.created_by,
-            'items': bucketlistitems,
-            'total_pages': all_pages,
-            'next_page': next_page_url,
-            'previous_page': previous_page_url
+            'created_by': bucketlist.created_by
+            # 'items': bucketlistitems,
+            # 'total_pages': all_pages,
+            # 'next_page': next_page_url,
+            # 'previous_page': previous_page_url
         })
 
     return jsonify(bucketlists)
@@ -236,8 +239,9 @@ def get_specific_bucket_list(bucketlist_id):
 def update_bucket_list(bucketlist_id):
     user_id = current_user['user_id']
     name = request.json.get('name', '')
+    description = request.json.get('description', '')
 
-    if not name.strip():
+    if not name.strip() and not description.strip():
         return jsonify({'message': 'please provide a name'})
 
     if db.session.query(BucketList).filter_by(
@@ -247,6 +251,7 @@ def update_bucket_list(bucketlist_id):
     bucketlist = db.session.query(BucketList).filter_by(
         bucketlist_id=bucketlist_id, created_by=user_id).first()
     bucketlist.name = name
+    bucketlist.description = description
     try:
         db.session.commit()
     except Exception:
@@ -368,4 +373,4 @@ def delete_bucket_list_item(bucketlist_id, item_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, threaded=True)

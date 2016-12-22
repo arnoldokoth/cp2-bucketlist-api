@@ -1,5 +1,5 @@
-from app.models import db
-from app.app import app
+from models import db
+from app import app
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_script import Manager

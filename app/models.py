@@ -29,7 +29,7 @@ class User(db.Model):
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
-    def generate_auth_token(self, expiration=600):
+    def generate_auth_token(self, expiration=100000000):
         s = Serializer(secret_key, expires_in=expiration)
         return s.dumps({'id': self.user_id})
 
@@ -38,6 +38,7 @@ class BucketList(db.Model):
     __tablename__ = 'bucketlist'
     bucketlist_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(1000), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.now())
     date_modified = db.Column(db.DateTime, default=datetime.now())
     created_by = db.Column(db.Integer, db.ForeignKey('user.user_id',
