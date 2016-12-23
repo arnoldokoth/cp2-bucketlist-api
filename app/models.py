@@ -4,6 +4,7 @@ from datetime import datetime
 from app import app
 from flask_sqlalchemy import SQLAlchemy
 from passlib.apps import custom_app_context as pwd_context
+from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 secret_key = os.environ['FLASK_SECRET_KEY']
@@ -16,18 +17,18 @@ class User(db.Model):
     __tablename__ = 'user'
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(40), unique=True)
-    password_hash = db.Column(db.VARCHAR(500))
+    password_hash = db.Column(db.String(50))
     bucketlists = db.relationship('BucketList',
                                   backref='',
                                   passive_deletes=True)
 
     # Hash Password: DO NOT STORE PASSWORD IN PLAIN TEXT
     def hash_password(self, password):
-        self.password_hash = pwd_context.encrypt(password)
+        self.password_hash = generate_password_hash(password)
 
     # Verify Password: Compare Password with it's hash
     def verify_password(self, password):
-        return pwd_context.verify(password, self.password_hash)
+        return check_password_hash(self.password_hash,password)
 
     def generate_auth_token(self, expiration=100000000):
         s = Serializer(secret_key, expires_in=expiration)
