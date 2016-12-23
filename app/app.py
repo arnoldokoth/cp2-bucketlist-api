@@ -66,8 +66,8 @@ def register_new_user():
         return jsonify({'message': 'Username/Password Not Provided!'})
 
     # Check if the username already exists
-    if db.session.query(User).filter_by(username=username).first() is not None:
-        user = db.session.query(User).filter_by(username=username).first()
+    user = User.query.filter_by(username=username).first()
+    if user:
         return jsonify({'message': 'User already exists!'})
 
     user = User(username=username)
