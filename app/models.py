@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 from app import app
 from flask_sqlalchemy import SQLAlchemy
-from passlib.apps import custom_app_context as pwd_context
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
