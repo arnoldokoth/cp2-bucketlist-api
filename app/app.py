@@ -130,7 +130,7 @@ def create_bucket_list():
         return jsonify({
             'message': 'error occured while creating bucketlist'}), status.HTTP_500_INTERNAL_SERVER_ERROR
 
-    return jsonify({'message': 'created bucketlist: {0}'.format(name)}), status.HTTP_201_CREATED
+    return jsonify(bucketlist.serialize()), status.HTTP_201_CREATED
 
 
 @app.route('/bucketlists', methods=['GET'])
@@ -148,7 +148,8 @@ def get_bucket_lists():
     search = request.args.get('q', '')
 
     if db.session.query(BucketList).filter_by(created_by=user_id).count() == 0:
-        return jsonify({'message': 'no bucketlist found'})
+        # return jsonify({'message': 'no bucketlist found'})
+        return status.HTTP_400_BAD_REQUEST
 
     bucketlist_rows = BucketList.query.filter(
         BucketList.created_by == user_id,
@@ -188,8 +189,8 @@ def get_bucket_lists():
             'description': bucketlist.description,
             'date_created': bucketlist.date_created,
             'date_modified': bucketlist.date_modified,
-            'created_by': bucketlist.created_by
-            # 'items': bucketlistitems,
+            'created_by': bucketlist.created_by,
+            'items': bucketlistitems,
             # 'total_pages': all_pages,
             # 'next_page': next_page_url,
             # 'previous_page': previous_page_url
