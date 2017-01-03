@@ -47,6 +47,16 @@ class BucketList(db.Model):
                                       backref='bucketlist',
                                       passive_deletes=True)
 
+    def serialize(self):
+        return {
+            'id': self.bucketlist_id,
+            'name': self.name,
+            'description': self.description,
+            'date_created': self.date_created,
+            'date_modified': self.date_modified,
+            'created_by': self.created_by
+        }
+
 
 class BucketListItems(db.Model):
     __tablename__ = 'bucketlistitems'
@@ -58,5 +68,15 @@ class BucketListItems(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.now())
     date_modified = db.Column(db.DateTime, default=datetime.now())
     done = db.Column(db.Boolean, default=False)
+
+    def serailize(self):
+        return {
+            'item_id': self.item_id,
+            'name': self.name,
+            'description': self.description,
+            'date_created': self.date_created,
+            'date_modified': self.date_modified,
+            'created_by': self.created_by
+        }
 
 # db.create_all()
